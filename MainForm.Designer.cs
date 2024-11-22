@@ -28,18 +28,30 @@ partial class MainForm
     /// </summary>
     private void InitializeComponent()
     {
+        components = new System.ComponentModel.Container();
+        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+        notifyIcon = new NotifyIcon(components);
         SuspendLayout();
+        // 
+        // notifyIcon
+        // 
+        notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
+        notifyIcon.Text = "WebApplications";
+        notifyIcon.Visible = true;
         // 
         // MainForm
         // 
         AutoScaleDimensions = new SizeF(7F, 17F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(800, 450);
+        Icon = (Icon)resources.GetObject("$this.Icon");
         Name = "MainForm";
         Text = "WebApplication";
-        Load += Form1_Load;
+        Load += MainForm_Load;
         ResumeLayout(false);
     }
 
     #endregion
+
+    private NotifyIcon notifyIcon;
 }
