@@ -1,0 +1,6 @@
+{
+  "router": {
+    "taskbar-menu": "/web-application-taskbar-menu",
+    "home": "/home"
+  }
+}

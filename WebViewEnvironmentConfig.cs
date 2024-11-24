@@ -1,6 +1,9 @@
 ﻿using TidyHPC.LiteJson;
 
 namespace WebApplication;
+/// <summary>
+/// WebView环境配置
+/// </summary>
 public class WebViewEnvironmentConfig
 {
     /// <summary>

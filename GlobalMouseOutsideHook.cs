@@ -3,30 +3,45 @@ using System.Runtime.InteropServices;
 
 namespace WebApplication
 {
-    public class GlobalMouseHook : IDisposable
+    /// <summary>
+    /// 全局鼠标钩子
+    /// </summary>
+    public class GlobalMouseOutsideHook : IDisposable
     {
         private IntPtr _hookId = IntPtr.Zero;
         private readonly LowLevelMouseProc _proc;
 
+        /// <summary>
+        /// 当鼠标点击在目标窗口外时触发
+        /// </summary>
         public event Action<Point>? MouseClickOutside;
 
-        public GlobalMouseHook(Form targetForm)
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="targetForm"></param>
+        public GlobalMouseOutsideHook(Form targetForm)
         {
             _proc = HookCallback;
             _hookId = SetHook(_proc);
             TargetForm = targetForm;
         }
 
+        /// <summary>
+        /// 目标窗口
+        /// </summary>
         public Form TargetForm { get; }
 
         private IntPtr SetHook(LowLevelMouseProc proc)
         {
-            using (var curProcess = Process.GetCurrentProcess())
-            using (var curModule = curProcess.MainModule)
+            using var curProcess = Process.GetCurrentProcess();
+            using var curModule = curProcess.MainModule;
+            if (curModule != null)
             {
                 return SetWindowsHookEx(WH_MOUSE_LL, proc,
-                    GetModuleHandle(curModule.ModuleName), 0);
+                GetModuleHandle(curModule.ModuleName), 0);
             }
+            return IntPtr.Zero;
         }
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
@@ -46,6 +61,9 @@ namespace WebApplication
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
+        /// <summary>
+        /// 释放资源
+        /// </summary>
         public void Dispose()
         {
             UnhookWindowsHookEx(_hookId);

@@ -1,30 +1,47 @@
 ﻿namespace WebApplication;
+
+/// <summary>
+/// 通知窗口，用于任务栏菜单
+/// </summary>
 public class NotifyWindow
 {
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="webViewManager"></param>
     public NotifyWindow(WebViewManager webViewManager)
     {
         NotifyWebform = new WebForm(webViewManager);
-        NotifyWebform.Opacity = 0;
-        NotifyWebform.Deactivate += (sender, e) => Hide();
-        NotifyWebform.FormBorderStyle = FormBorderStyle.None;
+        NotifyWebform.Deactivate += (sender, e) => NotifyWebform.Hide();
         NotifyWebform.ShowInTaskbar = false;
-        NotifyWebform.Size = new Size(200, 400);
-        NotifyWebform.Show();
+        NotifyWebform.FormBorderStyle = FormBorderStyle.None;
+        NotifyWebform.BorderStyle = WindowBorderStyle.Round;
+        NotifyWebform.StartPosition = FormStartPosition.Manual;
+        NotifyWebform.Size = new Size(100, 150);
+        NotifyWebform.Hide();
         NotifyWebform.FormClosing += (sender, e) =>
         {
             e.Cancel = true;
-            Hide();
+            NotifyWebform.Hide();
         };
-        GlobalMouseHook = new GlobalMouseHook(NotifyWebform);
-        GlobalMouseHook.MouseClickOutside += (pos) => Hide();
+        GlobalMouseHook = new GlobalMouseOutsideHook(NotifyWebform);
+        GlobalMouseHook.MouseClickOutside += (pos) => NotifyWebform.Hide();
     }
 
-    private GlobalMouseHook GlobalMouseHook;
+    private GlobalMouseOutsideHook GlobalMouseHook;
 
+    /// <summary>
+    /// 提醒用的窗口
+    /// </summary>
     public WebForm NotifyWebform { get; }
 
+    /// <summary>
+    /// 显示窗口
+    /// </summary>
+    /// <param name="position"></param>
     public void Show(Point position)
     {
+        var size = NotifyWebform.Size;
         NotifyWebform.TopMost = true;
         // 获取屏幕的工作区域
         Rectangle screenBounds = Screen.FromPoint(position).WorkingArea;
@@ -58,23 +75,28 @@ public class NotifyWindow
         }
 
         // 设置窗口位置
-        NotifyWebform.StartPosition = FormStartPosition.Manual;
+        
         NotifyWebform.Location = new Point(x, y);
-
         // 显示窗口
-        NotifyWebform.Opacity = 1;
+        NotifyWebform.Show();
+        NotifyWebform.Size = size;
+       
     }
 
-    public void Hide()
-    {
-        NotifyWebform.Opacity = 0;
-    }
-
+    /// <summary>
+    /// 导航到指定的地址
+    /// </summary>
+    /// <param name="url"></param>
     public void Navigate(string url)
     {
         NotifyWebform.WebView?.CoreWebView2.Navigate(url);
+        //NotifyWebform.WebView?.CoreWebView2.OpenDevToolsWindow();
     }
 
+    /// <summary>
+    /// 初始化
+    /// </summary>
+    /// <returns></returns>
     public async Task Initialize()
     {
         await NotifyWebform.Initialize();

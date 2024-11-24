@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>webapp.ico</ApplicationIcon>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
     <PackageReference Include="TidyHPC" Version="1.0.17" />
     <PackageReference Include="TidyHPC.ASP" Version="1.0.4" />
+    <PackageReference Include="VizGroup" Version="1.0.12" />
   </ItemGroup>
 
 </Project>
