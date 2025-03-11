@@ -1,6 +1,28 @@
 {
   "router": {
-    "taskbar-menu": "/web-application-taskbar-menu",
-    "home": "/home"
-  }
+    "taskbar-menu": "http://124.221.102.24:8080/web-application-taskbar-menu",
+    "home": "http://124.221.102.24:8080/easyplm-ui-home"
+  },
+  "startup": [
+    {
+      "path": "tscl.exe",
+      "args": [
+        "run",
+        "client",
+        "--repository",
+        "https://github.com/opencads/easyplm-client.git",
+        "--application-name",
+        "easyplm-client"
+      ],
+      "create-no-window": false
+    }
+  ],
+  "environments": [
+    {
+      "action": "add",
+      "type": "user",
+      "key": "Path",
+      "value": "{.}\\bin"
+    }
+  ]
 }

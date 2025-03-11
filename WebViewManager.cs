@@ -1,5 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using TidyHPC.Loggers;
 using TidyHPC.Queues;
 
 namespace WebApplication;
@@ -39,6 +40,38 @@ public class WebViewManager
     /// </summary>
     private WaitQueue<WebView2> WebView2Queue { get; set; } = new();
 
+    private async Task CreateWebView2()
+    {
+        try
+        {
+            WebView2? webView = null;
+            TaskCompletionSource taskCompletionSource = new();
+            _ = TaskFactory.StartNew(async () =>
+            {
+                try
+                {
+                    webView = new WebView2();
+                    await webView.EnsureCoreWebView2Async(WebView2Environment);
+                    taskCompletionSource.SetResult();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+            });
+            await taskCompletionSource.Task;
+            if (webView != null)
+            {
+                WebView2Queue.Enqueue(webView);
+            }
+        }
+        catch(Exception e)
+        {
+            Logger.Error(e);
+            throw;
+        }
+    }
+
     /// <summary>
     /// 初始化
     /// </summary>
@@ -46,27 +79,31 @@ public class WebViewManager
     /// <returns></returns>
     public async Task Initialize(WebViewEnvironmentConfig config)
     {
-        WebView2Environment = await CoreWebView2Environment.CreateAsync(
-                    userDataFolder: config.UserDataDirectory);
-        WebView2Queue.OnDequeueStart = async () =>
+        try
         {
-            if(WebView2Queue.CurrentCount == 0)
+            if (Directory.Exists(config.UserDataDirectory) == false)
             {
-                WebView2? webView = null;
-                TaskCompletionSource taskCompletionSource = new();
-                _ = TaskFactory.StartNew(async () =>
-                {
-                    webView = new WebView2();
-                    await webView.EnsureCoreWebView2Async(WebView2Environment);
-                    taskCompletionSource.SetResult();
-                });
-                await taskCompletionSource.Task;
-                if (webView != null)
-                {
-                    WebView2Queue.Enqueue(webView);
-                }
+                Directory.CreateDirectory(config.UserDataDirectory);
             }
-        };
+            WebView2Environment = await CoreWebView2Environment.CreateAsync(
+                        userDataFolder: config.UserDataDirectory,
+                        options: new CoreWebView2EnvironmentOptions()
+                        {
+                            AdditionalBrowserArguments = "--disable-web-security"
+                        });
+            WebView2Queue.OnDequeueStart = async () =>
+            {
+                if (WebView2Queue.CurrentCount == 0)
+                {
+                    await CreateWebView2();
+                }
+            };
+        }
+        catch(Exception e)
+        {
+            Logger.Error(e);
+            throw;
+        }
     }
 
     /// <summary>
@@ -76,6 +113,19 @@ public class WebViewManager
     public async Task<WebView2> GetWebView()
     {
         return await WebView2Queue.Dequeue();
+    }
+
+    /// <summary>
+    /// 添加WebView
+    /// </summary>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    public async Task AddWebView(int count)
+    {
+        for(int i = 0; i < count; i++)
+        {
+            await CreateWebView2();
+        }
     }
 
     /// <summary>

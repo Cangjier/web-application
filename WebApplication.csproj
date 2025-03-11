@@ -16,9 +16,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
-    <PackageReference Include="TidyHPC" Version="1.0.17" />
-    <PackageReference Include="TidyHPC.ASP" Version="1.0.4" />
-    <PackageReference Include="VizGroup" Version="1.0.12" />
+    <PackageReference Include="Svg" Version="3.4.7" />
+    <PackageReference Include="TidyHPC" Version="1.0.21" />
+    <PackageReference Include="TidyHPC.ASP" Version="1.0.6" />
+    <PackageReference Include="VizGroup" Version="1.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="app.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
