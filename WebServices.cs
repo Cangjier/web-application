@@ -1,4 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using Cangjie.TypeSharp;
+using Cangjie.TypeSharp.System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using TidyHPC.LiteJson;
 
 namespace WebApplication;
@@ -16,6 +19,21 @@ public class WebServices
     {
         WebApplications = webApplications;
         Server = new VizGroup.V1.Application();
+        Server.ServiceScope.TaskService.ProgramCollection.CreateProgramByScriptContent = (filePath, content) =>
+        {
+            return new TSProgram(filePath, content);
+        };
+        Server.ServiceScope.TaskService.ProgramCollection.RunProgramByFilePathAndArgs = async (program, filePath, args) =>
+        {
+            if (program is not TSProgram programInstance)
+            {
+                throw new ArgumentException();
+            }
+            using var context = new Context();
+            context.script_path = filePath;
+            context.args = args;
+            await programInstance.RunAsync(context);
+        };
         Server.Register(Urls.Exit, Exit);
         Server.Register(Urls.Close, Close);
         Server.Register(Urls.Open, Open);
@@ -49,17 +67,54 @@ public class WebServices
     public int Port { get; set; } = 12332;
 
     /// <summary>
+    /// 插件目录
+    /// </summary>
+    public static string PluginsDirectory { get; } = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "plugins");
+
+    /// <summary>
     /// 启动
     /// </summary>
     /// <returns></returns>
     public async Task Start()
     {
-        await Server.Start(new VizGroup.V1.ApplicationConfig()
+        await UpdatePlugins();
+        _ = Server.Start(new VizGroup.V1.ApplicationConfig()
         {
             EnablePlugins = true,
             ServerPorts = [Port],
+            PluginsDirectory = PluginsDirectory,
             StaticResourcePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "build")
         });
+        await Server.OnConfigCompleted.Task;
+    }
+
+    /// <summary>
+    /// 更新插件
+    /// </summary>
+    /// <returns></returns>
+    public async Task UpdatePlugins()
+    {
+        var directories = Directory.GetDirectories(PluginsDirectory, ".git", SearchOption.AllDirectories);
+        List<Task> tasks = [];
+        foreach (var item in directories)
+        {
+            var path = Path.GetDirectoryName(item);
+            var pullTask = Task.Run(async () =>
+            {
+                var process = new Process();
+                process.StartInfo.FileName = "git";
+                process.StartInfo.Arguments = "pull";
+                process.StartInfo.WorkingDirectory = path;
+                process.StartInfo.CreateNoWindow = true;
+                process.Start();
+                // 设置超时3秒取消
+                using CancellationTokenSource cts = new();
+                cts.CancelAfter(3000);
+                await process.WaitForExitAsync(cts.Token);
+            });
+            tasks.Add(pullTask);
+        }
+        await Task.WhenAll(tasks);
     }
 
     /// <summary>
@@ -261,6 +316,8 @@ public class WebServices
                     {
                         form.Visible = true;
                     }
+                    //form.Opacity = 1;
+                    //form.HideTitleBar();
                     form.Show();
                     form.TopMost = !form.TopMost;
                     form.TopMost = !form.TopMost;

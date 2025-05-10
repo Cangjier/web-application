@@ -13,7 +13,8 @@ internal static class Program
         ApplicationConfiguration.Initialize();
         Application.Run(new MainForm()
         {
-            Visible=false
+            Visible=false,
+            //Opacity = 0,
         });
     }
 }

@@ -71,7 +71,7 @@ public class WebApplications
     {
         StartupProcesses();
         await NotifyWindow.Initialize();
-        _ = Task.Run(WebServices.Start);
+        await WebServices.Start();
         if (ApplicationConfig.Router.TaskBarMenu.StartsWith("http"))
         {
             NotifyWindow.Navigate($"{ApplicationConfig.Router.TaskBarMenu}");

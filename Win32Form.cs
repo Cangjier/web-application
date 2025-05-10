@@ -28,7 +28,7 @@ public class Win32Form : Form
     /// <summary>
     /// Hide the title bar of the form
     /// </summary>
-    protected void HideTitleBar()
+    public void HideTitleBar()
     {
         // 获取当前窗体句柄
         IntPtr hwnd = this.Handle;

@@ -2,24 +2,37 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>webapp.ico</ApplicationIcon>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+	  <PublishDir>bin\Release\net8.0-windows\publish\win-x64\</PublishDir>
+	  <PublishProtocol>FileSystem</PublishProtocol>
+	  <_TargetId>Folder</_TargetId>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <SelfContained>false</SelfContained>
+	  <PublishSingleFile>true</PublishSingleFile>
+	  <PublishReadyToRun>true</PublishReadyToRun>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="WebApplication.csproj~RF48924af.TMP" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="webapp.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+    <PackageReference Include="Cangjie.TypeSharp" Version="1.0.33" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3240.44" />
     <PackageReference Include="Svg" Version="3.4.7" />
-    <PackageReference Include="TidyHPC" Version="1.0.21" />
-    <PackageReference Include="TidyHPC.ASP" Version="1.0.6" />
-    <PackageReference Include="VizGroup" Version="1.0.15" />
+    <PackageReference Include="TidyHPC" Version="1.0.25" />
+    <PackageReference Include="TidyHPC.ASP" Version="1.0.7" />
+    <PackageReference Include="VizGroup" Version="1.0.24" />
   </ItemGroup>
 
   <ItemGroup>
