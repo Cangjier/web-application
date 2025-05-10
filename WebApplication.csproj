@@ -32,7 +32,7 @@
     <PackageReference Include="Svg" Version="3.4.7" />
     <PackageReference Include="TidyHPC" Version="1.0.25" />
     <PackageReference Include="TidyHPC.ASP" Version="1.0.7" />
-    <PackageReference Include="VizGroup" Version="1.0.24" />
+    <PackageReference Include="VizGroup" Version="1.0.25" />
   </ItemGroup>
 
   <ItemGroup>
