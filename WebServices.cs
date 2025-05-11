@@ -43,7 +43,8 @@ public class WebServices
         Server.Register(Urls.Minimize, Minimize);
         Server.Register(Urls.Home, Home);
         Server.Register(Urls.MouseDownDrag, MouseDownDrag);
-        
+        Server.Register(Urls.Show, Show);
+
     }
 
     /// <summary>
@@ -83,7 +84,8 @@ public class WebServices
             EnablePlugins = true,
             ServerPorts = [Port],
             PluginsDirectory = PluginsDirectory,
-            StaticResourcePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "build")
+            StaticResourcePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "build"),
+            EnableDatabase = false
         });
         await Server.OnConfigCompleted.Task;
     }
@@ -185,6 +187,11 @@ public class WebServices
         public const string Home = "/api/v1/app/home";
 
         /// <summary>
+        /// 显示指定窗口的Url
+        /// </summary>
+        public const string Show = "/api/v1/app/show";
+
+        /// <summary>
         /// 显示home的Url
         /// </summary>
         public const string MouseDownDrag = "/api/v1/app/mousedowndrag";
@@ -218,10 +225,29 @@ public class WebServices
     /// </summary>
     /// <param name="url"></param>
     /// <param name="location"></param>
+    /// <param name="resident"></param>
     /// <returns></returns>
-    public async Task Open(string url,Json location)
+    public async Task Open(string url,Json location,bool resident=false)
     {
-        await WebApplications.WebViewManager.TaskFactory.StartNew(async () => await WebApplications.New(url, location));
+        await WebApplications.WebViewManager.TaskFactory.StartNew(async () => await WebApplications.New(url, location, resident));
+    }
+
+    /// <summary>
+    /// 显示指定窗口
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task Show(Guid id)
+    {
+        if (WebApplications.Applications.TryGetValue(id, out var form))
+        {
+            await WebApplications.WebViewManager.TaskFactory.StartNew(() =>
+            {
+                form.Show();
+                form.TopMost = !form.TopMost;
+                form.TopMost = !form.TopMost;
+            });
+        }
     }
 
     /// <summary>
@@ -231,11 +257,12 @@ public class WebServices
     /// <param name="location"></param>
     /// <param name="data"></param>
     /// <param name="dataID"></param>
+    /// <param name="resident"></param>
     /// <returns></returns>
-    public async Task OpenWithData(string url, Json location, Guid dataID, Json data)
+    public async Task OpenWithData(string url, Json location, Guid dataID, Json data,bool resident = false)
     {
         DataCache[dataID] = data;
-        await WebApplications.WebViewManager.TaskFactory.StartNew(async () => await WebApplications.New(url, location));
+        await WebApplications.WebViewManager.TaskFactory.StartNew(async () => await WebApplications.New(url, location, resident));
     }
 
     /// <summary>

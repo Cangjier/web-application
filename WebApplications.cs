@@ -186,16 +186,29 @@ public class WebApplications
     /// </summary>
     /// <param name="url"></param>
     /// <param name="location"></param>
+    /// <param name="resident"></param>
     /// <returns></returns>
-    public async Task New(string url, LocationInterface location)
+    public async Task New(string url, LocationInterface location,bool resident)
     {
         var form = new WebForm(WebViewManager);
-        await Register(form);
+        if (resident)
+        {
+            // get url path without query
+            var uri = new Uri(url);
+            var path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
+            await Register(path, form);
+        }
+        else
+        {
+            await Register(form);
+        }
+
+            form.Visible = false;
         form.WebView?.CoreWebView2.Navigate(url);
         form.SetLocation(location);
-        form.Show();
-        form.TopMost = !form.TopMost;
-        form.TopMost = !form.TopMost;
+        //form.Show();
+        //form.TopMost = !form.TopMost;
+        //form.TopMost = !form.TopMost;
     }
 
     /// <summary>
