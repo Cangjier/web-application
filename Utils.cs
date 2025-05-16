@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.NetworkInformation;
 
 namespace WebApplication;
@@ -30,4 +31,6 @@ internal class Utils
         IPEndPoint[] ipEndPoints = ipGlobalProperties.GetActiveTcpListeners();
         return ipEndPoints.Any(endPoint => endPoint.Port == port);
     }
+
+    public static Stopwatch StartupWatch { get; } = new();
 }

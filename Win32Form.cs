@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using TidyHPC.Loggers;
 
 namespace WebApplication;
 
@@ -14,6 +15,9 @@ public class Win32Form : Form
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+    public static extern int SetWindowTheme(IntPtr hWnd, string pszSubAppName, string pszSubIdList);
 
 
     // 获取窗口样式
@@ -33,14 +37,17 @@ public class Win32Form : Form
         // 获取当前窗体句柄
         IntPtr hwnd = this.Handle;
 
-        // 获取当前窗体的样式
-        uint style = (uint)GetWindowLong(hwnd, GWL_STYLE);
+        //// 获取当前窗体的样式
+        //uint style = (uint)GetWindowLong(hwnd, GWL_STYLE);
 
-        // 移除标题栏样式（WS_CAPTION），保留系统菜单和边框样式
-        style &= ~WS_CAPTION;
+        //// 移除标题栏样式（WS_CAPTION），保留系统菜单和边框样式
+        //style &= ~WS_CAPTION;
+
+        //Logger.Info($"style={style}");
+
 
         // 更新窗体样式
-        SetWindowLong(hwnd, GWL_STYLE, style);
+        SetWindowLong(hwnd, GWL_STYLE, 101646336);
 
         // 更新窗口位置和大小，确保可以缩放
         SetWindowPos(hwnd, IntPtr.Zero, 0, 0, this.Width, this.Height, 0);

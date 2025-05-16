@@ -3,6 +3,7 @@ using Cangjie.TypeSharp.System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using TidyHPC.LiteJson;
+using TidyHPC.Loggers;
 
 namespace WebApplication;
 
@@ -103,16 +104,20 @@ public class WebServices
             var path = Path.GetDirectoryName(item);
             var pullTask = Task.Run(async () =>
             {
-                var process = new Process();
-                process.StartInfo.FileName = "git";
-                process.StartInfo.Arguments = "pull";
-                process.StartInfo.WorkingDirectory = path;
-                process.StartInfo.CreateNoWindow = true;
-                process.Start();
-                // 设置超时3秒取消
-                using CancellationTokenSource cts = new();
-                cts.CancelAfter(3000);
-                await process.WaitForExitAsync(cts.Token);
+                try
+                {
+                    var process = new Process();
+                    process.StartInfo.FileName = "git";
+                    process.StartInfo.Arguments = "pull";
+                    process.StartInfo.WorkingDirectory = path;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.Start();
+                    await process.WaitForExitAsync();
+                }
+                catch(Exception e)
+                {
+                    Logger.Error(e);
+                }
             });
             tasks.Add(pullTask);
         }
@@ -339,15 +344,38 @@ public class WebServices
             {
                 await WebApplications.WebViewManager.TaskFactory.StartNew(() =>
                 {
-                    if (form.Visible == false)
+                    //if (form.Visible == false)
+                    //{
+                    //    form.Visible = true;
+                    //}
+
+                    var mainform = form as MainForm;
+                    if (mainform?.IsHideToolbar==false)
                     {
-                        form.Visible = true;
+                        //var location = form.Location;
+                        //form.Opacity = 1;
+                        //form.ShowInTaskbar = true;
+                        //form.FormBorderStyle = FormBorderStyle.Sizable;
+                        //form.HideTitleBar();
+                        //form.Location = location;
+                        form.SetLocation(new LocationInterface()
+                        {
+                            X="center",
+                            Y="center",
+                            Width = "80%",
+                            Height = "80%"
+                        });
                     }
-                    //form.Opacity = 1;
-                    //form.HideTitleBar();
+                    
                     form.Show();
+                    
                     form.TopMost = !form.TopMost;
                     form.TopMost = !form.TopMost;
+                    if (Utils.StartupWatch.IsRunning)
+                    {
+                        Utils.StartupWatch.Stop();
+                        Logger.Info($"Startup time: {Utils.StartupWatch.ElapsedMilliseconds}ms");
+                    }
                 });
             }
         }

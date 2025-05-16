@@ -1,6 +1,9 @@
-﻿using Svg;
+﻿using Cangjie.TypeSharp;
+using Svg;
 using System.Collections.Concurrent;
 using System.IO;
+using System.IO.Compression;
+using TidyHPC.Loggers;
 
 namespace WebApplication;
 
@@ -28,10 +31,38 @@ public class LocalFavicon
         {
             try
             {
-                var bytes = await HttpClient.GetByteArrayAsync(url);
+                using var response = await HttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+
+                var encoding = response.Content.Headers.ContentEncoding.FirstOrDefault();
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                Stream decodedStream = responseStream;
+
+                if (encoding == "gzip")
+                {
+                    decodedStream = new GZipStream(responseStream, CompressionMode.Decompress);
+                }
+                else if (encoding == "deflate")
+                {
+                    decodedStream = new DeflateStream(responseStream, CompressionMode.Decompress);
+                }
+                else if (encoding == "br")
+                {
+                    decodedStream = new BrotliStream(responseStream, CompressionMode.Decompress);
+                }
+                else if (!string.IsNullOrEmpty(encoding))
+                {
+                    throw new NotSupportedException($"Unsupported Content-Encoding: {encoding}");
+                }
+
+                using var memoryStream = new MemoryStream();
+                await decodedStream.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+
                 using var stream = new MemoryStream(bytes);
                 if (url.EndsWith(".svg"))
                 {
+                    Logger.Info($"svg:{Util.UTF8.GetString(bytes)}");
                     var svg = SvgDocument.Open<SvgDocument>(stream);
                     icon = Icon.FromHandle(svg.Draw(32, 32).GetHicon());
                 }
@@ -39,12 +70,13 @@ public class LocalFavicon
                 {
                     icon = Icon.FromHandle(new Bitmap(stream).GetHicon()); // 设置窗口图标
                 }
-                
+
                 Cache.TryAdd(url, icon);
                 return icon;
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Error(e);
                 return null;
             }
         }

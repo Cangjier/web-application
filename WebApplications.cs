@@ -190,25 +190,40 @@ public class WebApplications
     /// <returns></returns>
     public async Task New(string url, LocationInterface location,bool resident)
     {
-        var form = new WebForm(WebViewManager);
-        if (resident)
+        var uri = new Uri(url);
+        var path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
+        Logger.Info($"New url={url}, path={path} location={location}, resident={resident}");
+        if (resident && KnownApplications.TryGetValue(path, out var id))
         {
-            // get url path without query
-            var uri = new Uri(url);
-            var path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
-            await Register(path, form);
+            if (Applications.TryGetValue(id, out var form))
+            {
+                form.Visible = true;
+                form.Show();
+                return;
+            }
+            else
+            {
+                Logger.Error($"Application {url} not found");
+                return;
+            }
         }
         else
         {
-            await Register(form);
-        }
+            var form = new WebForm(WebViewManager, resident ? WindowMode.Singleton : WindowMode.Normal);
+            if (resident)
+            {
+
+                await Register(path, form);
+            }
+            else
+            {
+                await Register(form);
+            }
 
             form.Visible = false;
-        form.WebView?.CoreWebView2.Navigate(url);
-        form.SetLocation(location);
-        //form.Show();
-        //form.TopMost = !form.TopMost;
-        //form.TopMost = !form.TopMost;
+            form.WebView?.CoreWebView2.Navigate(url);
+            form.SetLocation(location);
+        }
     }
 
     /// <summary>
@@ -253,6 +268,7 @@ public class WebApplications
             EventHandler<CoreWebView2NavigationCompletedEventArgs> onIconChanged = async (sender, e) =>
             {
                 var url = form.WebView?.CoreWebView2.FaviconUri;
+                Logger.Debug($"onIconChanged {url}");
                 if (url != null)
                 {
                     var icon = await LocalFavicon.GetOrDownload(url);

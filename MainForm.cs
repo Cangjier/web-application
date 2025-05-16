@@ -12,6 +12,8 @@ public partial class MainForm : WebForm
     /// </summary>
     public MainForm():base(WindowMode.Singleton)
     {
+        Location = new Point(-1000, -1000);
+        Size = new Size(0,0);
         Utils.DpiHelper.GetDpiScaleFactor(this);
         InitializeComponent();
         LoadLastIcon();
@@ -27,14 +29,14 @@ public partial class MainForm : WebForm
         {
             try
             {
+                Hide();
                 if (await WebApplications.WebServices.IsStarted())
                 {
                     Environment.Exit(0);
                 }
-                Hide();
                 await WebViewManager.Initialize(new WebViewEnvironmentConfig
                 {
-                    UserDataDirectory = "UserData"
+                    UserDataDirectory = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "UserData")
                 });
                 await WebApplications.Initialize();
                 await WebApplications.Register("home", this);
@@ -55,6 +57,11 @@ public partial class MainForm : WebForm
             }
         });
     }
+
+    /// <summary>
+    /// 是否隐藏工具栏
+    /// </summary>
+    public bool IsHideToolbar { get; set; } = false;
 
     /// <summary>
     /// 图标路径
@@ -123,7 +130,6 @@ public partial class MainForm : WebForm
 
     private void MainForm_Load(object sender, EventArgs e)
     {
-        SetWindowCenter(0.8f);
-        //Hide();
+        
     }
 }

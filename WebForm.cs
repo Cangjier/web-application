@@ -94,7 +94,7 @@ public partial class WebForm : Win32Form
             if (xString.EndsWith("%"))
             {
                 var ratio = float.Parse(xString.Substring(0, xString.Length - 1)) / 100;
-                Left = screen.Left + (int)(screen.Width * ratio * currentDpiScaleFactor);
+                Left = (int)(screen.Width * ratio * currentDpiScaleFactor);
             }
             else if (xString == "left")
             {
@@ -102,11 +102,11 @@ public partial class WebForm : Win32Form
             }
             else if (xString == "right")
             {
-                Left = Screen.FromControl(this).Bounds.Right - Width;
+                Left = screen.Right - Width;
             }
             else if (xString == "center")
             {
-                Left = (Screen.FromControl(this).Bounds.Width - Width) / 2;
+                Left = (screen.Width - Width) / 2;
             }
         }
 
@@ -120,7 +120,7 @@ public partial class WebForm : Win32Form
             if (yString.EndsWith("%"))
             {
                 var ratio = float.Parse(yString.Substring(0, yString.Length - 1)) / 100;
-                Top = screen.Top + (int)(screen.Height * ratio * currentDpiScaleFactor);
+                Top =(int)(screen.Height * ratio * currentDpiScaleFactor);
             }
             else if (yString == "top")
             {
@@ -128,27 +128,13 @@ public partial class WebForm : Win32Form
             }
             else if (yString == "bottom")
             {
-                Top = Screen.FromControl(this).Bounds.Bottom - Height;
+                Top = screen.Bottom - Height;
             }
             else if (yString == "center")
             {
-                Top = (Screen.FromControl(this).Bounds.Height - Height) / 2;
+                Top = (screen.Height - Height) / 2;
             }
         }
-    }
-
-    /// <summary>
-    /// 设置居中
-    /// </summary>
-    /// <param name="ratio"></param>
-    public void SetWindowCenter(float ratio)
-    {
-        float currentDpiScaleFactor = 1;
-        var currentScreen = Screen.FromControl(this);
-        var workingArea = currentScreen.WorkingArea;
-        StartPosition = FormStartPosition.Manual;
-        Location = new Point(workingArea.Left + (int)(workingArea.Width * (1- ratio) / 2 * currentDpiScaleFactor), workingArea.Top + (int)(workingArea.Height * (1- ratio) / 2 * currentDpiScaleFactor));
-        Size = new Size((int)(workingArea.Width * ratio * currentDpiScaleFactor), (int)(workingArea.Height * ratio * currentDpiScaleFactor));
     }
 
     private void SetWindowMode(WindowMode mode)

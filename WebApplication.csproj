@@ -27,12 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cangjie.TypeSharp" Version="1.0.33" />
+    <PackageReference Include="Cangjie.TypeSharp" Version="1.0.34" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3240.44" />
     <PackageReference Include="Svg" Version="3.4.7" />
     <PackageReference Include="TidyHPC" Version="1.0.27" />
     <PackageReference Include="TidyHPC.ASP" Version="1.0.7" />
-    <PackageReference Include="VizGroup" Version="1.0.27" />
+    <PackageReference Include="VizGroup" Version="1.0.29" />
   </ItemGroup>
 
   <ItemGroup>

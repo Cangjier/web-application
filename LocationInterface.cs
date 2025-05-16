@@ -17,6 +17,14 @@ public class LocationInterface
     }
 
     /// <summary>
+    /// Constructor
+    /// </summary>
+    public LocationInterface()
+    {
+        Target = Json.NewObject();
+    }
+
+    /// <summary>
     /// Wrapper
     /// </summary>
     public Json Target { get; }
@@ -42,20 +50,36 @@ public class LocationInterface
     /// <summary>
     /// X
     /// </summary>
-    public Json X => Target.Get("x", Json.Null);
+    public Json X
+    {
+        get => Target.Get("x", Json.Null);
+        set => Target.Set("x", value);
+    }
 
     /// <summary>
     /// Y
     /// </summary>
-    public Json Y => Target.Get("y", Json.Null);
+    public Json Y
+    {
+        get => Target.Get("y", Json.Null);
+        set => Target.Set("y", value);
+    }
 
     /// <summary>
     /// Width
     /// </summary>
-    public Json Width => Target.Get("width", Json.Null);
+    public Json Width
+    {
+        get => Target.Get("width", Json.Null);
+        set => Target.Set("width", value);
+    }
 
     /// <summary>
     /// Height
     /// </summary>
-    public Json Height => Target.Get("height", Json.Null);
+    public Json Height
+    {
+        get => Target.Get("height", Json.Null);
+        set => Target.Set("height", value);
+    }
 }
