@@ -3,6 +3,7 @@ using Svg;
 using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Compression;
+using TidyHPC.Extensions;
 using TidyHPC.Loggers;
 
 namespace WebApplication;
@@ -72,6 +73,92 @@ public class LocalFavicon
                 }
 
                 Cache.TryAdd(url, icon);
+                return icon;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从本地添加图标
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public Icon? LoadFromFilePath(string fileName)
+    {
+        var fullPath = Path.GetFullPath(fileName, Path.GetDirectoryName(Environment.ProcessPath) ?? "");
+        if (Cache.TryGetValue(fullPath, out var icon))
+        {
+            return icon;
+        }
+        else
+        {
+            try
+            {
+                using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+                if (fileName.EndsWith(".svg"))
+                {
+                    var svg = SvgDocument.Open<SvgDocument>(stream);
+                    icon = Icon.FromHandle(svg.Draw(32, 32).GetHicon());
+                }
+                else
+                {
+                    icon = new Icon(fullPath);
+                }
+                Cache.TryAdd(fullPath, icon);
+                return icon;
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 从嵌入资源添加图标
+    /// </summary>
+    /// <param name="resourceName"></param>
+    /// <returns></returns>
+    /// <exception cref="FileNotFoundException"></exception>
+    public Icon? LoadFromResource(string resourceName)
+    {
+        if (Cache.TryGetValue(resourceName, out var icon))
+        {
+            return icon;
+        }
+        else
+        {
+            try
+            {
+                var resources = typeof(LocalFavicon).Assembly.GetManifestResourceNames();
+                var matchedResource = resources.FirstOrDefault(r => r.EndsWith(resourceName, StringComparison.OrdinalIgnoreCase));
+                if (matchedResource == null)
+                {
+                    resources.Foreach(r => Logger.Debug($"Available resource: {r}"));
+                    Logger.Error($"Resource not found: {resourceName}");
+                    return null;
+                }
+                using var stream = typeof(LocalFavicon).Assembly.GetManifestResourceStream(matchedResource);
+                if (stream == null)
+                {
+                    throw new FileNotFoundException($"Resource not found: {resourceName}");
+                }
+                if (resourceName.EndsWith(".svg"))
+                {
+                    var svg = SvgDocument.Open<SvgDocument>(stream);
+                    icon = Icon.FromHandle(svg.Draw(32, 32).GetHicon());
+                }
+                else
+                {
+                    icon = new Icon(stream);
+                }
+                Cache.TryAdd(resourceName, icon);
                 return icon;
             }
             catch (Exception e)

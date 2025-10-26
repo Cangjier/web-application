@@ -8,6 +8,21 @@ namespace WebApplication;
 public class ApplicationConfig
 {
     /// <summary>
+    /// 应用模式
+    /// </summary>
+    public enum ApplicationMode
+    {
+        /// <summary>
+        /// 单实例
+        /// </summary>
+        Single,
+        /// <summary>
+        /// 多实例
+        /// </summary>
+        Multiple
+    }
+
+    /// <summary>
     /// 路由接口
     /// </summary>
     public class RouterInterface
@@ -272,6 +287,32 @@ public class ApplicationConfig
                 result.Add(environment);
             }
             return result.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// 指定端口
+    /// </summary>
+    public int Port
+    {
+        get => Target.Read("port", 12332);
+        set => Target.Set("port", value);
+    }
+
+    /// <summary>
+    /// 应用模式
+    /// </summary>
+    public ApplicationMode Mode
+    {
+        get
+        {
+            var mode = Target.Read("mode", "multiple");
+            return mode.ToLower() == "multiple" ? ApplicationMode.Multiple : ApplicationMode.Single;
+        }
+        set
+        {
+            var mode = value == ApplicationMode.Multiple ? "multiple" : "single";
+            Target.Set("mode", mode);
         }
     }
 

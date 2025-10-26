@@ -35,16 +35,15 @@ partial class MainForm
         // 
         // notifyIcon
         // 
-        notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
-        notifyIcon.Text = "WebApplications";
+        notifyIcon.Text = "Developer";
         notifyIcon.Visible = true;
         // 
         // MainForm
         // 
-        AutoScaleDimensions = new SizeF(7F, 17F);
+        AutoScaleDimensions = new SizeF(13F, 28F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 450);
-        Icon = (Icon)resources.GetObject("$this.Icon");
+        ClientSize = new Size(1486, 741);
+        Margin = new Padding(11, 8, 11, 8);
         Name = "MainForm";
         Text = "WebApplication";
         Load += MainForm_Load;

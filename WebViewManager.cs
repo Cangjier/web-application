@@ -52,6 +52,12 @@ public class WebViewManager
                 {
                     webView = new WebView2();
                     await webView.EnsureCoreWebView2Async(WebView2Environment);
+                    webView.CoreWebView2.PermissionRequested += (sender, args) =>
+                    {
+                        args.State = CoreWebView2PermissionState.Allow;
+                    };
+                    webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
                     taskCompletionSource.SetResult();
                 }
                 catch (Exception e)
@@ -85,11 +91,13 @@ public class WebViewManager
             {
                 Directory.CreateDirectory(config.UserDataDirectory);
             }
+            var localExecutableFolder = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "bin");
             WebView2Environment = await CoreWebView2Environment.CreateAsync(
+                        browserExecutableFolder: Directory.Exists(localExecutableFolder) ? localExecutableFolder : null,
                         userDataFolder: config.UserDataDirectory,
                         options: new CoreWebView2EnvironmentOptions()
                         {
-                            AdditionalBrowserArguments = "--disable-web-security"
+                            AdditionalBrowserArguments = "--disable-web-security --no-sandbox"
                         });
             WebView2Queue.OnDequeueStart = async () =>
             {

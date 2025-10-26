@@ -1,4 +1,5 @@
-﻿namespace WebApplication;
+﻿using TidyHPC.Loggers;
+namespace WebApplication;
 
 /// <summary>
 /// 通知窗口，用于任务栏菜单
@@ -9,7 +10,8 @@ public class NotifyWindow
     /// 构造函数
     /// </summary>
     /// <param name="webViewManager"></param>
-    public NotifyWindow(WebViewManager webViewManager)
+    /// <param name="webApplications"></param>
+    public NotifyWindow(WebViewManager webViewManager, WebApplications webApplications)
     {
         NotifyWebform = new WebForm(webViewManager);
         NotifyWebform.Deactivate += (sender, e) => NotifyWebform.Hide();
@@ -25,10 +27,20 @@ public class NotifyWindow
             NotifyWebform.Hide();
         };
         GlobalMouseHook = new GlobalMouseOutsideHook(NotifyWebform);
-        GlobalMouseHook.MouseClickOutside += (pos) => NotifyWebform.Hide();
+        GlobalMouseHook.MouseClickOutside += (pos) =>
+        {
+            if (NotifyWebform.Visible)
+            {
+                Logger.Info($"GlobalMouseHook.MouseClickOutside:{pos.X},{pos.Y}, Bounds={NotifyWebform.Bounds}");
+            }
+            NotifyWebform.Hide();
+        };
+        WebApplications = webApplications;
     }
 
     private GlobalMouseOutsideHook GlobalMouseHook;
+
+    private WebApplications WebApplications { get; }
 
     /// <summary>
     /// 提醒用的窗口
@@ -99,11 +111,17 @@ public class NotifyWindow
     /// <returns></returns>
     public async Task Initialize()
     {
-        await NotifyWebform.Initialize();
+        //await NotifyWebform.Initialize();
+        await WebApplications.Register("notify", NotifyWebform);
         if (NotifyWebform.WebView != null)
         {
             var webview2 = NotifyWebform.WebView;
             webview2.CoreWebView2.Settings.IsStatusBarEnabled = false;
         }
+
+        //if (Path.GetFileNameWithoutExtension(Environment.ProcessPath) == "WebApplication")
+        //{
+        //    NotifyWebform.WebView?.CoreWebView2.OpenDevToolsWindow();
+        //}
     }
 }

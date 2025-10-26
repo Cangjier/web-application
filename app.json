@@ -1,4 +1,5 @@
 {
+  "mode":"single",
   "router": {
     "taskbar-menu": "http://124.221.102.24:8080/web-application-taskbar-menu",
     "home": "http://124.221.102.24:8080/novel-ui"

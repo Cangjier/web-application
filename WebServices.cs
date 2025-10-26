@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using TidyHPC.LiteJson;
 using TidyHPC.Loggers;
+using TidyHPC.Routers.Urls;
+using TidyHPC.Routers.Urls.Interfaces;
 
 namespace WebApplication;
 
@@ -34,6 +36,7 @@ public class WebServices
             context.script_path = filePath;
             context.args = args;
             await programInstance.RunAsync(context);
+            await context.Logger.QueueLogger.WaitForEmpty();
         };
         Server.Register(Urls.Exit, Exit);
         Server.Register(Urls.Close, Close);
@@ -45,6 +48,8 @@ public class WebServices
         Server.Register(Urls.Home, Home);
         Server.Register(Urls.MouseDownDrag, MouseDownDrag);
         Server.Register(Urls.Show, Show);
+        Server.Register(Urls.Copy, Copy);
+        Server.Register(Urls.Broadcast, Broadcast);
 
     }
 
@@ -72,6 +77,11 @@ public class WebServices
     /// 插件目录
     /// </summary>
     public static string PluginsDirectory { get; } = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "plugins");
+
+    /// <summary>
+    /// 广播映射
+    /// </summary>
+    public ConcurrentDictionary<string, IWebsocketResponse> BroadcastMap { get; } = [];
 
     /// <summary>
     /// 启动
@@ -130,6 +140,11 @@ public class WebServices
     /// <returns></returns>
     public async Task<bool> IsStarted()
     {
+        if(WebApplications.ApplicationConfig.Mode == ApplicationConfig.ApplicationMode.Multiple)
+        {
+            Port = Utils.GetAvailablePort();
+            return false;
+        }
         using HttpClient httpClient = new();
         try
         {
@@ -200,6 +215,16 @@ public class WebServices
         /// 显示home的Url
         /// </summary>
         public const string MouseDownDrag = "/api/v1/app/mousedowndrag";
+
+        /// <summary>
+        /// 复制数据
+        /// </summary>
+        public const string Copy = "/api/v1/app/copy";
+
+        /// <summary>
+        /// 广播消息到其他Web Page
+        /// </summary>
+        public const string Broadcast = "/api/v1/app/broadcast";
     }
 
     /// <summary>
@@ -317,6 +342,21 @@ public class WebServices
     }
 
     /// <summary>
+    /// 复制数据到剪贴板
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public async Task Copy(string text)
+    {
+        await WebApplications.WebViewManager.TaskFactory.StartNew(() =>
+        {
+            Clipboard.SetText(text);
+        });
+    }
+
+    private DateTime LastMouseDownDragDateTime { get; set; } = DateTime.MinValue;
+
+    /// <summary>
     /// 鼠标按下拖拽
     /// </summary>
     /// <param name="id"></param>
@@ -328,6 +368,18 @@ public class WebServices
             await WebApplications.WebViewManager.TaskFactory.StartNew(() =>
             {
                 form.EventForwarder.MouseDownDrag();
+                if(LastMouseDownDragDateTime.AddSeconds(0.5) > DateTime.Now)
+                {
+                    if(form.WindowState == FormWindowState.Normal)
+                    {
+                        form.WindowState = FormWindowState.Maximized;
+                    }
+                    else
+                    {
+                        form.WindowState = FormWindowState.Normal;
+                    }
+                }
+                LastMouseDownDragDateTime = DateTime.Now;
             });
         }
     }
@@ -378,6 +430,60 @@ public class WebServices
                     }
                 });
             }
+        }
+    }
+
+    /// <summary>
+    /// 广播消息到其他Web Page，不包括发送消息的页面
+    /// <para>仅支持websocket</para>
+    /// </summary>
+    /// <returns></returns>
+    public async Task Broadcast(Session session)
+    {
+        if (session.IsWebSocket==false)
+        {
+            return;
+        }
+        var message = await session.Cache.GetRequstBodyJson();
+        var action = message.Read("action", string.Empty);
+        var appId = message.Read("app_id", string.Empty);
+        if (action == "register")
+        {
+            Logger.Debug($"Register broadcast client: {appId}");
+            if (string.IsNullOrEmpty(appId) == false)
+            {
+                BroadcastMap[appId] = session.WebSocketResponse ?? throw new NullReferenceException();
+            }
+            else
+            {
+                throw new ArgumentException("app_id is null or empty");
+            }
+        }
+        else if(action == "broadcast")
+        {
+            var others = BroadcastMap.Where(x => x.Key != appId).ToArray();
+            Logger.Debug($"Broadcast to {others.Length} clients");
+            foreach (var item in others)
+            {
+                var websocketResponse = item.Value;
+                var itemKey = item.Key;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await websocketResponse.SendMessage(message.Get("data").ToString());
+                    }
+                    catch (Exception e)
+                    {
+                        BroadcastMap.TryRemove(itemKey, out var _);
+                        Logger.Error("Broadcast failed",e);
+                    }
+                });
+            }
+        }
+        else
+        {
+            Logger.Error($"Broadcast Unknown action: {action}");
         }
     }
 }

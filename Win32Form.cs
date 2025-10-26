@@ -17,7 +17,7 @@ public class Win32Form : Form
     static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
     [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
-    public static extern int SetWindowTheme(IntPtr hWnd, string pszSubAppName, string pszSubIdList);
+    static extern int SetWindowTheme(IntPtr hWnd, string pszSubAppName, string pszSubIdList);
 
 
     // 获取窗口样式

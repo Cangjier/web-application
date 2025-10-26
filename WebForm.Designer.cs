@@ -33,10 +33,11 @@ partial class WebForm
         // 
         // WebForm
         // 
-        AutoScaleDimensions = new SizeF(7F, 17F);
+        AutoScaleDimensions = new SizeF(13F, 28F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 450);
-        Icon = (Icon)resources.GetObject("$this.Icon");
+        ClientSize = new Size(1486, 741);
+        Location = new Point(0, 0);
+        Margin = new Padding(6, 5, 6, 5);
         Name = "WebForm";
         Text = "WebForm";
         ResumeLayout(false);

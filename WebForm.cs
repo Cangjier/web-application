@@ -11,10 +11,23 @@ public partial class WebForm : Win32Form
     /// <summary>
     /// 构造函数
     /// </summary>
+    public WebForm()
+    {
+        InitializeComponent();
+        Icon = Utils.LocalFavicon.LoadFromResource("develop.ico");
+        WebViewManager = null;
+        SetWindowMode(WindowMode.Normal);
+        HideTitleBar();
+    }
+
+    /// <summary>
+    /// 构造函数
+    /// </summary>
     /// <param name="webViewManager"></param>
     public WebForm(WebViewManager webViewManager)
     {
         InitializeComponent();
+        Icon = Utils.LocalFavicon.LoadFromResource("develop.ico");
         WebViewManager = webViewManager;
         SetWindowMode(WindowMode.Normal);
         HideTitleBar();
@@ -28,6 +41,7 @@ public partial class WebForm : Win32Form
     public WebForm(WebViewManager webViewManager,WindowMode mode)
     {
         InitializeComponent();
+        Icon = Utils.LocalFavicon.LoadFromResource("develop.ico");
         WebViewManager = webViewManager;
         SetWindowMode(mode);
         HideTitleBar();
@@ -39,6 +53,7 @@ public partial class WebForm : Win32Form
     protected WebForm(WindowMode mode)
     {
         InitializeComponent();
+        Icon = Utils.LocalFavicon.LoadFromResource("develop.ico");
         SetWindowMode(mode);
         HideTitleBar();
     }

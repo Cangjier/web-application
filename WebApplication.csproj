@@ -1,38 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup Label="Globals">
+    <WebView2LoaderPreference>Dynamic</WebView2LoaderPreference>
+  </PropertyGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>webapp.ico</ApplicationIcon>
+    <ApplicationIcon>develop.ico</ApplicationIcon>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
 
-	  <PublishDir>bin\Release\net8.0-windows\publish\win-x64\</PublishDir>
-	  <PublishProtocol>FileSystem</PublishProtocol>
-	  <_TargetId>Folder</_TargetId>
-	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-	  <SelfContained>false</SelfContained>
-	  <PublishSingleFile>true</PublishSingleFile>
-	  <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishDir>bin\Release\net8.0-windows\publish\win-x64\</PublishDir>
+    <PublishProtocol>FileSystem</PublishProtocol>
+    <_TargetId>Folder</_TargetId>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <EnableWindowsFormsHighDpiAutoResizing>true</EnableWindowsFormsHighDpiAutoResizing>
+    <AssemblyName>ShumuNovel</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="WebApplication.csproj~RF48924af.TMP" />
+    <None Remove="develop.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="webapp.ico" />
+    <EmbeddedResource Include="develop.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cangjie.TypeSharp" Version="1.0.34" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3240.44" />
+    <PackageReference Include="Cangjie.TypeSharp" Version="1.0.54" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
     <PackageReference Include="Svg" Version="3.4.7" />
-    <PackageReference Include="TidyHPC" Version="1.0.27" />
-    <PackageReference Include="TidyHPC.ASP" Version="1.0.7" />
-    <PackageReference Include="VizGroup" Version="1.0.29" />
+    <PackageReference Include="TidyHPC" Version="1.0.47" />
+    <PackageReference Include="TidyHPC.ASP" Version="1.0.10" />
+    <PackageReference Include="VizGroup" Version="1.0.36" />
   </ItemGroup>
 
   <ItemGroup>

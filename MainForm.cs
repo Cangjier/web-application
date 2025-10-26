@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using TidyHPC.Loggers;
 
 namespace WebApplication;
@@ -12,11 +13,12 @@ public partial class MainForm : WebForm
     /// </summary>
     public MainForm():base(WindowMode.Singleton)
     {
-        Location = new Point(-1000, -1000);
+        Location = new Point(-2000, -2000);
         Size = new Size(0,0);
         Utils.DpiHelper.GetDpiScaleFactor(this);
+        Utils.DpiHelper.Hwnd = Handle;
         InitializeComponent();
-        LoadLastIcon();
+        notifyIcon.Icon = Icon;
         notifyIcon.MouseUp += NotifyIcon_MouseUp;
         WebViewManager = new WebViewManager(TaskScheduler.FromCurrentSynchronizationContext());
         WebApplications = new WebApplications(WebViewManager);
@@ -130,6 +132,64 @@ public partial class MainForm : WebForm
 
     private void MainForm_Load(object sender, EventArgs e)
     {
-        
+        try
+        {
+            Logger.Info($"GetAwareness:{Utils.DpiHelper.GetAwareness()}");
+        }
+        catch(Exception ex)
+        {
+            Logger.Error("Failed to get DPI awareness. Ensure the application is DPI-aware.",ex);
+        }
+    }
+
+    /// <summary>
+    /// 处理窗口消息，特别是 DPI 改变事件
+    /// </summary>
+    /// <param name="m"></param>
+    protected override void WndProc(ref Message m)
+    {
+        const int WM_DPICHANGED = 0x02E0;
+
+        if (m.Msg == WM_DPICHANGED)
+        {
+            //var newDpi = (int)(m.WParam.ToInt32() & 0xFFFF); // DPI X
+            //float scaleFactor = newDpi / 96f;
+            //Logger.Info($"DPI changed! New DPI: {newDpi}, scale factor: {scaleFactor}");
+
+            // 可选：调整窗口大小
+            var suggestedRect = Marshal.PtrToStructure<RECT>(m.LParam);
+            this.SetBounds(
+                suggestedRect.Left,
+                suggestedRect.Top,
+                suggestedRect.Right - suggestedRect.Left,
+                suggestedRect.Bottom - suggestedRect.Top
+            );
+        }
+
+        base.WndProc(ref m);
+    }
+
+    /// <summary>
+    /// 矩形结构体，用于处理窗口大小和位置
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        /// <summary>
+        /// 左
+        /// </summary>
+        public int Left;
+        /// <summary>
+        /// 上
+        /// </summary>
+        public int Top;
+        /// <summary>   
+        /// 右
+        /// </summary>
+        public int Right;
+        /// <summary>
+        /// 下
+        /// </summary>
+        public int Bottom;
     }
 }

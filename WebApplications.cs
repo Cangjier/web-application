@@ -1,8 +1,6 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Windows.Forms;
-using TidyHPC.LiteDB.BasicValues;
 using TidyHPC.Loggers;
 
 namespace WebApplication;
@@ -50,7 +48,7 @@ public class WebApplications
     /// <summary>
     /// 本地图标缓存
     /// </summary>
-    public LocalFavicon LocalFavicon { get; } = new();
+
 
     /// <summary>
     /// 构造函数
@@ -59,7 +57,7 @@ public class WebApplications
     public WebApplications(WebViewManager webViewManager)
     {
         WebViewManager = webViewManager;
-        NotifyWindow = new NotifyWindow(webViewManager);
+        NotifyWindow = new NotifyWindow(webViewManager, this);
         WebServices = new WebServices(this);
     }
 
@@ -255,6 +253,7 @@ public class WebApplications
             var scriptID = await form.WebView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync($$"""
             window.webapplication = {
                 "id": "{{id}}",
+                "baseURL": "http://127.0.0.1:{{WebServices.Port}}"
             }
             """);
             EventHandler<object> onTitleChanged = (sender, e) =>
@@ -267,16 +266,16 @@ public class WebApplications
             };
             EventHandler<CoreWebView2NavigationCompletedEventArgs> onIconChanged = async (sender, e) =>
             {
-                var url = form.WebView?.CoreWebView2.FaviconUri;
-                Logger.Debug($"onIconChanged {url}");
-                if (url != null)
-                {
-                    var icon = await LocalFavicon.GetOrDownload(url);
-                    if (icon != null && form.Icon != icon)
-                    {
-                        form.SetIcon(icon);
-                    }
-                }
+                //var url = form.WebView?.CoreWebView2.FaviconUri;
+                //Logger.Debug($"onIconChanged {url}");
+                //if (url != null)
+                //{
+                //    var icon = await Utils.LocalFavicon.GetOrDownload(url);
+                //    if (icon != null && form.Icon != icon)
+                //    {
+                //        form.SetIcon(icon);
+                //    }
+                //}
             };
             form.WebView.CoreWebView2.DocumentTitleChanged += onTitleChanged;
             form.WebView.CoreWebView2.NavigationCompleted += onIconChanged;
