@@ -152,11 +152,6 @@ public partial class MainForm : WebForm
 
         if (m.Msg == WM_DPICHANGED)
         {
-            //var newDpi = (int)(m.WParam.ToInt32() & 0xFFFF); // DPI X
-            //float scaleFactor = newDpi / 96f;
-            //Logger.Info($"DPI changed! New DPI: {newDpi}, scale factor: {scaleFactor}");
-
-            // 可选：调整窗口大小
             var suggestedRect = Marshal.PtrToStructure<RECT>(m.LParam);
             this.SetBounds(
                 suggestedRect.Left,

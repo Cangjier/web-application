@@ -38,6 +38,17 @@ public class WebServices
             await programInstance.RunAsync(context);
             await context.Logger.QueueLogger.WaitForEmpty();
         };
+        Server.ServiceScope.TaskService.ProgramCollection.RunProgramByFilePathAndContext = async (program, filePath, context) =>
+        {
+            if (program is not TSProgram programInstance)
+            {
+                throw new ArgumentException($"program is not a TSProgram");
+            }
+            var asContext = context as Context ?? throw new ArgumentException($"context is not a Context");
+            asContext.script_path = filePath;
+            asContext.args = [];
+            return await programInstance.RunWithoutDisposeAsync(asContext);
+        };
         Server.Register(Urls.Exit, Exit);
         Server.Register(Urls.Close, Close);
         Server.Register(Urls.Open, Open);
@@ -50,7 +61,6 @@ public class WebServices
         Server.Register(Urls.Show, Show);
         Server.Register(Urls.Copy, Copy);
         Server.Register(Urls.Broadcast, Broadcast);
-
     }
 
     /// <summary>
@@ -90,15 +100,29 @@ public class WebServices
     public async Task Start()
     {
         await UpdatePlugins();
-        _ = Server.Start(new VizGroup.V1.ApplicationConfig()
+        _ = Task.Run(async () =>
         {
-            EnablePlugins = true,
-            ServerPorts = [Port],
-            PluginsDirectory = PluginsDirectory,
-            StaticResourcePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "build"),
-            EnableDatabase = false
+            await Server.Start(new VizGroup.V1.ApplicationConfig()
+            {
+                EnablePlugins = true,
+                ServerPorts = [Port],
+                PluginsDirectory = PluginsDirectory,
+                StaticResourcePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? "", "build"),
+                EnableDatabase = false
+            });
         });
         await Server.OnConfigCompleted.Task;
+        _ = Task.Run(async () =>
+        {
+            var context = new Context();
+            context.Logger = Logger.LoggerFile;
+            var scriptContext = context.context;
+            scriptContext["server"] = new Json(new Server(Server));
+            var disposes = await Server.ServiceScope.TaskService.PluginCollection.RunTypeSharpService(context);
+            // 不对资源进行释放，保持长驻内存
+            await Task.Delay(Timeout.Infinite);
+            disposes.Dispose();
+        });
     }
 
     /// <summary>
@@ -320,7 +344,15 @@ public class WebServices
         {
             await WebApplications.WebViewManager.TaskFactory.StartNew(() =>
             {
-                form.WindowState = FormWindowState.Maximized;
+                if(form.GetWindowState()== FormWindowState.Maximized)
+                {
+                    form.RestoreWindow();
+                }
+                else
+                {
+                    form.MaximizeToCurrentScreen();
+                }
+                //form.WindowState = FormWindowState.Maximized;
             });
         }
     }

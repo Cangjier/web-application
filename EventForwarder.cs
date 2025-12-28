@@ -9,6 +9,8 @@ public class EventForwarder
 {
     private const int WM_NCLBUTTONDOWN = 0xA1;
     private const int HT_CAPTION = 0x2;
+    private const int WM_SYSCOMMAND = 0x0112;
+    private const int SC_MOVE = 0xF010;
 
     [DllImport("user32.dll")]
     private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
@@ -33,5 +35,6 @@ public class EventForwarder
     {
         ReleaseCapture();
         SendMessage(target, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+        //SendMessage(target, WM_SYSCOMMAND, SC_MOVE | HT_CAPTION, 0);
     }
 }

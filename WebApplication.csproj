@@ -22,7 +22,7 @@
     <PublishReadyToRun>true</PublishReadyToRun>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <EnableWindowsFormsHighDpiAutoResizing>true</EnableWindowsFormsHighDpiAutoResizing>
-    <AssemblyName>ShumuNovel</AssemblyName>
+    <AssemblyName>Shumu</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,12 +34,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cangjie.TypeSharp" Version="1.0.54" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
-    <PackageReference Include="Svg" Version="3.4.7" />
-    <PackageReference Include="TidyHPC" Version="1.0.47" />
-    <PackageReference Include="TidyHPC.ASP" Version="1.0.10" />
-    <PackageReference Include="VizGroup" Version="1.0.36" />
+	<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
+	<PackageReference Include="Svg" Version="3.4.7" />
+	<PackageReference Include="Cangjie.TypeSharp" Version="1.0.64" Condition="!Exists('..\cangjie-typesharp\Cangjie.TypeSharp.csproj')" />
+	<PackageReference Include="TidyHPC" Version="1.0.62" Condition="!Exists('..\tidy-hpc\TidyHPC.csproj')" />
+    <PackageReference Include="TidyHPC.ASP" Version="*" Condition="!Exists('..\tidy-hpc-asp\TidyHPC.ASP.csproj')" />
+	<PackageReference Include="VizGroup" Version="1.0.40" Condition="!Exists('..\viz-group-service\VizGroup.csproj')" /> 
   </ItemGroup>
 
   <ItemGroup>
